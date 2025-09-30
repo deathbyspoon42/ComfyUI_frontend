@@ -84,6 +84,7 @@ const specDescriptor = computed<{
   const allowUpload =
     image_upload === true ||
     animated_image_upload === true ||
+    video_upload === true ||
     audio_upload === true
   return {
     kind,

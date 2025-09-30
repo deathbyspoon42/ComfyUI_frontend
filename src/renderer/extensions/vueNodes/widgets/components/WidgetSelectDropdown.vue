@@ -7,6 +7,7 @@ import { t } from '@/i18n'
 import { useToastStore } from '@/platform/updates/common/toastStore'
 import type { ResultItemType } from '@/schemas/apiSchema'
 import { api } from '@/scripts/api'
+import { getAcceptString } from '@/types/mediaTypes'
 import type { SimplifiedWidget } from '@/types/simplifiedWidget'
 import type { AssetKind } from '@/types/widgetTypes'
 import {
@@ -61,7 +62,7 @@ const dropdownItems = computed<DropdownItem[]>(() => {
 
   return values.map((value: string, index: number) => ({
     id: index,
-    imageSrc: getMediaUrl(value),
+    mediaSrc: getMediaUrl(value),
     name: value,
     metadata: ''
   }))
@@ -91,6 +92,13 @@ const mediaPlaceholder = computed(() => {
 })
 
 const uploadable = computed(() => props.allowUpload === true)
+
+const acceptTypes = computed(() => {
+  if (!props.assetKind) return undefined
+  // AssetKind includes 'model' which isn't in MediaKind
+  if (props.assetKind === 'model') return undefined
+  return getAcceptString(props.assetKind)
+})
 
 watch(
   localValue,
@@ -199,7 +207,7 @@ async function handleFilesUpdate(files: File[]) {
 }
 
 function getMediaUrl(filename: string): string {
-  if (props.assetKind !== 'image') return ''
+  if (props.assetKind !== 'image' && props.assetKind !== 'video') return ''
   // TODO: This needs to be adapted based on actual ComfyUI API structure
   return `/api/view?filename=${encodeURIComponent(filename)}&type=input`
 }
@@ -223,6 +231,7 @@ const filterOptions = ref<FilterOption[]>([
       :multiple="false"
       :uploadable="uploadable"
       :disabled="readonly"
+      :accept="acceptTypes"
       :filter-options="filterOptions"
       v-bind="combinedProps"
       class="w-full"

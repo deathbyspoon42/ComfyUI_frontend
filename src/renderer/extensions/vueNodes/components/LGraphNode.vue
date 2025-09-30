@@ -121,9 +121,10 @@
         <!-- Custom content at reduced+ detail -->
         <NodeContent
           v-if="hasCustomContent"
+          :node="lgraphNode"
           :node-data="nodeData"
           :readonly="readonly"
-          :image-urls="nodeImageUrls"
+          :media-urls="nodeImageUrls"
         />
         <!-- Live preview image -->
         <div
@@ -371,17 +372,17 @@ const nodeOutputs = useNodeOutputStore()
 const nodeOutputLocatorId = computed(() =>
   nodeData.subgraphId ? `${nodeData.subgraphId}:${nodeData.id}` : nodeData.id
 )
+
+const lgraphNode = computed(() => {
+  const locatorId = getLocatorIdFromNodeData(nodeData)
+  const rootGraph = app.graph?.rootGraph || app.graph
+  if (!rootGraph) return null
+  return getNodeByLocatorId(rootGraph, locatorId)
+})
+
 const nodeImageUrls = computed(() => {
   const newOutputs = nodeOutputs.nodeOutputs[nodeOutputLocatorId.value]
-  const locatorId = getLocatorIdFromNodeData(nodeData)
-
-  // Use root graph for getNodeByLocatorId since it needs to traverse from root
-  const rootGraph = app.graph?.rootGraph || app.graph
-  if (!rootGraph) {
-    return []
-  }
-
-  const node = getNodeByLocatorId(rootGraph, locatorId)
+  const node = lgraphNode.value
 
   if (node && newOutputs?.images?.length) {
     const urls = nodeOutputs.getNodeImageUrls(node)
